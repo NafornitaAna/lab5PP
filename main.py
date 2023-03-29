@@ -1,4 +1,5 @@
 import sys
+import sysv_ipc
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -25,8 +26,24 @@ class window(QWidget):
 
    def b1_clicked(self):
       f=open(self.textEdit.toPlainText(),"r")
-      print(f.read())
+      titlu=f.readline().strip()
+      continut=""
+      for line in f.readlines()[1:]:
+         continut+=line
+      print("titlu ",titlu,"\n continut",continut)
+      g=open("/home/ana/Desktop/htmlll","w")
+      g.write(f"<Html> <Head> <title> {titlu} </title> </Head> <Body>{continut} </Body> </Html>")
+      try:
+         # put the key (integer) as parameter (in this case: -1)
+         message_queue = sysv_ipc.MessageQueue(-1)
+         send_message(message_queue, f"<Html> <Head> <title> {titlu} </title> </Head> <Body>{continut} </Body> </Html>")
+      except sysv_ipc.ExistentialError:
+         print("Message queue not initialized. Please run the C program first")
       f.close()
+
+
+def send_message(message_queue, message):
+   message_queue.send(message)
 
 def main():
    app = QApplication(sys.argv)
